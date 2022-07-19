@@ -56,11 +56,18 @@ public class ActivityServiceImpl implements ActivityService {
     public ActivityResponse upDate(Long id, ActivityRequestUpDate request) throws ActivityNotFoundException{
 
         try {
-
+        	//pregunto si la actividad a la que referencio en el request existe
             if (activityRepository.findById(id).isPresent()) {
-
-                ActivityEntity entitySave = activityMapper.requestUpDate2Entity(request);
+            	//obtengo la actividad a la que referencio en el request
+            	ActivityEntity entityFound = activityRepository.findById(id).orElseThrow();
+            	//mapeo la actividad existente con los datos del request
+            	//la implementación del método requestUpDate2Entity no debe crear una entidad nueva
+            	//debe utilizar la actividad recuperada, por eso recibe 2 parámetros
+            	//un request y una entidad
+                ActivityEntity entitySave = activityMapper.requestUpDate2Entity(entityFound, request);
+                //guardo la entidad que devuelve el método requestUpDate2Entity del mapper 
                 activityRepository.save(entitySave);
+                //mapeo una respuesta
                 ActivityResponse response = activityMapper.entity2Response(entitySave);
 
                 return response;

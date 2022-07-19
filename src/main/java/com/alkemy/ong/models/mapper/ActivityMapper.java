@@ -39,19 +39,20 @@ public class ActivityMapper {
 
     }
 
-    public ActivityEntity requestUpDate2Entity(ActivityRequestUpDate request){
+    public ActivityEntity requestUpDate2Entity(ActivityEntity activity, ActivityRequestUpDate request){
 
-        ActivityEntity entity = new ActivityEntity();
 
-        entity.setId(request.getId());
-        entity.setContent(request.getContent());
-        entity.setImage(request.getImage());
-        entity.setName(request.getName());
+    	//recibo la entidad recuperada y la cargo con los datos del request
+    	//es importante no setear el id ya que no traemos ningun id en el request,
+    	//sino que esta indicado en el path variable
+        activity.setContent(request.getContent());
+        activity.setImage(request.getImage());
+        activity.setName(request.getName());
         Long datetime = System.currentTimeMillis();
         Timestamp timestamp = new Timestamp(datetime);
-        entity.setTimestamp(timestamp);
+        activity.setTimestamp(timestamp);
 
-        return entity;
+        return activity;
 
     }
 

@@ -39,7 +39,7 @@ public class ActivityController {
 
     @Transactional
     @PutMapping("/{id}")
-    public ResponseEntity<Object> upDate(@Valid @RequestBody ActivityRequestUpDate request, @PathVariable ("id") @Valid @NotNull Long id){
+    public ResponseEntity<Object> upDate(@PathVariable ("id") @Valid @NotNull Long id, @Valid @RequestBody ActivityRequestUpDate request ){
 
         ActivityResponse response =  activityService.upDate(id, request);
 
