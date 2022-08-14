@@ -9,12 +9,14 @@ import com.alkemy.ong.repository.*;
 import com.alkemy.ong.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.stream.IntStream;
 
 @Component
+@Profile("dev")
 public class InitializerSeeder implements CommandLineRunner {
 
     @Autowired

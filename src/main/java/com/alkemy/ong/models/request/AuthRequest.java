@@ -2,6 +2,9 @@ package com.alkemy.ong.models.request;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,7 +15,9 @@ import javax.validation.constraints.NotNull;
 
     @Getter
     @Setter
+    @Builder
     @ApiModel(description = "Class representing an Authentication Request.")
+    @AllArgsConstructor
     public class AuthRequest {
         @NotNull(message = "the email can't be null")
         @NotEmpty(message = "the email can't be empty")

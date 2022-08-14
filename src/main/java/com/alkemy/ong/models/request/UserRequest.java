@@ -3,6 +3,7 @@ package com.alkemy.ong.models.request;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,6 +16,7 @@ import javax.validation.constraints.NotNull;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @ApiModel(description = "Class representing an User Request.")
 public class UserRequest {
     @NotNull(message = "the firstName can't be null")

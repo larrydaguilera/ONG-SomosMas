@@ -4,11 +4,13 @@ import com.alkemy.ong.models.entity.ActivityEntity;
 import com.alkemy.ong.repository.ActivityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
 
 @Component
+@Profile("dev")
 public class ActivitySeeder implements CommandLineRunner {
 
     @Autowired
