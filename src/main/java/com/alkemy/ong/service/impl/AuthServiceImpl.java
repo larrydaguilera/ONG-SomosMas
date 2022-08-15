@@ -58,10 +58,13 @@ public class AuthServiceImpl implements AuthService {
             roles.add(rol);
         }
         userRequest.setPassword(passwordEncoder.encode(userRequest.getPassword()));
-        UserEntity userEntity = userMapper.toUserEntity(userRequest, roles);
+        UserEntity userEntity  = userMapper.toUserEntity(userRequest, roles);
         userRepository.save(userEntity);
-        emailService.checkFromRequest(userEntity.getEmail(), "userRegistered");
-        String token = generateToken(userRequest.getEmail());
+        
+        if(!userRequest.getEmail().contains("@user"))
+        	emailService.checkFromRequest(userEntity.getEmail(), "userRegistered");
+        
+        //String token = generateToken(userRequest.getEmail());
         return userMapper.toUserResponse(userEntity);
     }
 
