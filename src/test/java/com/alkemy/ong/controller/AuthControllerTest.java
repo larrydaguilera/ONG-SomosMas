@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
-
 import javax.transaction.Transactional;
 
 import org.junit.Before;
@@ -17,20 +16,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import com.alkemy.ong.models.entity.CategoryEntity;
+import com.alkemy.ong.context.ContextTest;
 import com.alkemy.ong.models.entity.RoleEntity;
-import com.alkemy.ong.models.entity.UserEntity;
 import com.alkemy.ong.models.mapper.CategoryMapper;
 import com.alkemy.ong.models.mapper.UserMapper;
 import com.alkemy.ong.models.request.AuthRequest;
 import com.alkemy.ong.models.request.CategoryRequest;
-import com.alkemy.ong.models.request.NewsRequest;
 import com.alkemy.ong.models.request.UserRequest;
 import com.alkemy.ong.repository.CategoryRepository;
 import com.alkemy.ong.repository.RoleRepository;
@@ -47,79 +41,17 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-public class AuthControllerTest {
 
-	protected static final String BEARER = "Bearer ";
-	
-	private static final String REGISTER_URL = "/auth/register";
-	
-	private static final String AUTH_LOGIN_URL = "/auth/login"
-			;
+public class AuthControllerTest extends ContextTest{
+		
 	private static final String AUTH_ME_URL = "/auth/me";
-	
-	private static final String POST_NEWS_URL = "/news";
-
-	private static final String GET_NEWS_BY_ID_URL = "/news/{id}";
-	@Autowired
-	public MockMvc mockMvc;
-	@Autowired
-	protected ObjectMapper objectMapper;
-	@Autowired
-	public UserMapper mapper;
-	@Autowired
-	public CategoryMapper categoryMapper;
-	@Autowired
-	public UserRepository userRepo;
-	@Autowired
-	public RoleRepository roleRepo;
-	@Autowired
-	public CategoryRepository categoryRepo;	
-	@Autowired
-	public AuthService authService;
-
-	UserRequest userRequest;
-
-	AuthRequest authRequest;
-	
-	NewsRequest newsRequest;
-	
-	CategoryRequest categoryRequest;
-	
-	Set<RoleEntity> roles;
-
-
-	@Before()
-	public void setup() {
-		
-		authRequest = AuthRequest.builder()
-				.email("test@test.com")
-				.password("12345678")
-				.build();
-		
-		categoryRequest = CategoryRequest.builder()
-				.name("test")
-				.image("")
-				.description("test category")
-				.build();
-		
-		newsRequest = NewsRequest.builder()
-				.name("test")
-				.content("test")
-				.image("test@test.com")
-				.idCategory(null)
-				.build();
-		
-	}
 
 	@Test
 	public void should_return_user_created() throws Exception {	
-		userRequest = UserRequest.builder()
+		UserRequest userRequest = UserRequest.builder()
 				.firstName("user")
 				.lastName("user")
-				.email("user@user.com")
+				.email("usertest@test.com")
 				.password("12345678")
 				.build();
 
@@ -144,41 +76,33 @@ public class AuthControllerTest {
 				.perform(MockMvcRequestBuilders.post(REGISTER_URL)
 						.content(objectMapper.writeValueAsString(badUserRequest))
 						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.status().isBadRequest());
-		
+				.andExpect(MockMvcResultMatchers.status().isBadRequest());	
 	}
 
 	@Test
 	public void should_return_conflict_already_exists() throws Exception, IOException {
-		registerUser();
-		
+		postUser();
 		this.mockMvc
 				.perform(MockMvcRequestBuilders.post(REGISTER_URL)
 						.content(objectMapper.writeValueAsString(userRequest))
 						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.status().isConflict());
-		
+				.andExpect(MockMvcResultMatchers.status().isConflict());	
 	}
-
 
 
 	@Test
 	public void should_return_200ok_at_login_with_registered_user() throws Exception, IOException {
-		registerUser();
-		
 		this.mockMvc
 				.perform(MockMvcRequestBuilders.post(AUTH_LOGIN_URL)
 						.content(objectMapper.writeValueAsString(
 								AuthRequest.builder()
-								.email(userRequest
-								.getEmail())
-								.password(userRequest.getPassword())
+								.email("user@test.com")
+								.password("12345678")
 								.build()))
 						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(jsonPath("$.email", equalTo(userRequest.getEmail())))
+				.andExpect(jsonPath("$.email", equalTo("user@test.com")))
 				.andExpect(jsonPath("$.token", notNullValue()))
 				.andExpect(MockMvcResultMatchers.status().isOk());
-		
 	}
 
 	@Test
@@ -187,90 +111,34 @@ public class AuthControllerTest {
 				.perform(MockMvcRequestBuilders.post(AUTH_LOGIN_URL)
 						.content(objectMapper.writeValueAsString(
 							AuthRequest.builder()
-							.email(authRequest
-							.getEmail())
-							.password("falsopass")
+							.email("admin@test.com")
+							.password("invalid pass")
 							.build()))
 						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(jsonPath("$.ok", equalTo(false)));
-		
+				.andExpect(jsonPath("$.ok", equalTo(false)));	
 	}
 
 	@Test
-	public void should_return_user_details_after_register_and_login() throws Exception, IOException {
-		registerUser();
-
+	public void should_return_user_details_after_login() throws Exception, IOException {
+		postUser();
 		String content = this.mockMvc
 				.perform(post(AUTH_LOGIN_URL).contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(
 								AuthRequest.builder()
-								.email("user@user.com")
+								.email("user@test.com")
 								.password("12345678")
 								.build())))
 				.andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);		
 		String token = JsonPath.read(content, "$.token");
-		UserEntity user = mapper.toUserEntity(userRequest, roles);
 		
 		this.mockMvc
 				.perform(MockMvcRequestBuilders.get(AUTH_ME_URL)
 						.header(HttpHeaders.AUTHORIZATION, BEARER + token)
 						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(jsonPath("$.firstName", equalTo(user.getFirstName())))
-				.andExpect(jsonPath("$.lastName", equalTo(user.getLastName())))
-				.andExpect(jsonPath("$.email", equalTo(user.getEmail())))
+				.andExpect(jsonPath("$.firstName", equalTo(userRequest.getFirstName())))
+				.andExpect(jsonPath("$.lastName", equalTo(userRequest.getLastName())))
+				.andExpect(jsonPath("$.email", equalTo(userRequest.getEmail())))
 				.andExpect(status().isOk());
-
 	}
 	  
-	@Test
-	public void should_return_news() throws Exception, IOException {
-		CategoryEntity  newCategory = 	categoryRepo.save(categoryMapper.Request2Entity(categoryRequest));		
-		newsRequest.setIdCategory(newCategory.getId());
-
-		String token = generateAdminToken();
-		
-		this.mockMvc
-				.perform(MockMvcRequestBuilders.post(POST_NEWS_URL)
-						.header(HttpHeaders.AUTHORIZATION, BEARER + token )
-						.content(objectMapper.writeValueAsString(newsRequest))
-						.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.status().isCreated());
-		
-	}
-	
-	private void registerUser() throws Exception, JsonProcessingException {
-		userRequest = UserRequest.builder()
-				.firstName("user")
-				.lastName("user")
-				.email("user@user.com")
-				.password("12345678")
-				.build();
-
-		this.mockMvc
-				.perform(MockMvcRequestBuilders.post(REGISTER_URL)
-						.content(objectMapper.writeValueAsString(userRequest))
-						.contentType(MediaType.APPLICATION_JSON));
-	}
-
-	private String generateAdminToken() throws IOException, UnsupportedEncodingException, Exception, JsonProcessingException {
-		userRequest = UserRequest.builder()
-				.firstName("admin")
-				.lastName("admin")
-				.email("admin@test.com")
-				.password("12345678")
-				.build();
-		authService.registerAdmin(userRequest);	
-		
-		String content = this.mockMvc
-				.perform(post(AUTH_LOGIN_URL).contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(
-								AuthRequest.builder()
-								.email("admin@test.com")
-								.password("12345678")
-								.build())))
-				.andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);		
-	
-		return JsonPath.read(content, "$.token");
-	}
-	
 }
